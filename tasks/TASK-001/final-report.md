@@ -12,12 +12,13 @@ Training Sessions Workspace per `frontend-accelerator-assessment/FRONTEND_ASSESS
 | `777a5b1` | Implementation, essential tests, review and browser-verification fixes, browser evidence |
 | `6d85645` | Fix: close dialogs on backdrop click (developer-reported) |
 | `ff53791` | Fix: visible search label, padded select chevrons (developer-reported) |
+| `26ceb86` | Documentation only: `final-report.md` (no production code change vs `ff53791`) |
 
 Branch: `task-001-sessions-workspace`. `main` remains at `9cf16da`. Nothing has been pushed.
 
 ## 2. Code review evidence
 
-`review.md` has **not** been written; the verdicts below are preserved only in the prompt log.
+Full record: `review.md`, transcribed from the prompt log.
 
 | Round | Verdict | Findings and disposition | Source |
 | --- | --- | --- | --- |
@@ -30,7 +31,7 @@ The two developer-reported fixes after the review rounds (`6d85645`, `ff53791`) 
 
 ## 3. Automated verification evidence
 
-`verification.md` has **not** been written.
+Full record: `verification.md`, transcribed from the prompt log.
 
 **Formal `verify` role run** (L43; working directory `/Users/user/Documents/fe-accelerator-cert`; Node v23.11.1, npm 10.9.2). This ran before the F1–F4 fixes and the later commits.
 
@@ -59,27 +60,27 @@ Full record: `browser-verification.md`. Screenshots: `evidence/`.
 | --- | --- | --- | --- |
 | 1 | BLOCKED | Doctor `BLOCKED`: Node.js 23.11.1 unsupported. No browser was opened. | L45 |
 | 2: session `task001-verify` | FAIL | Every required flow works. Defects: F1 Scheduled badge contrast 4.27:1; F2 "No sessions yet" flash after clearing filters; F3 badges stretched full width; F4 duplicated alert copy. | L47 |
-| 3: session `task001-reverify` | **PASS** | F1 5.90:1, F2 no flash in 3 sampled runs, F3 badges `inline-flex` 57–103px, F4 single-message alerts with input preserved. 0 console errors/warnings, 0 page errors; only scenario-expected 500s. | L53 |
+| 3: session `task001-reverify` | PASS | F1 5.90:1, F2 no flash in 3 sampled runs, F3 badges `inline-flex` 57–103px, F4 single-message alerts with input preserved. 0 console errors/warnings, 0 page errors; only scenario-expected 500s. | L53 |
+| 4: session `task001-final`, current code (`26ceb86` = `ff53791` for production code) | **PASS** (current) | Full required matrix re-run, including backdrop-click close and the visible search label. All 12 screenshots were re-captured, and 2 mobile error-state captures were added (`create-error-mobile.png`, `list-error-mobile.png`). Console cleared once before any interaction: 0 errors/warnings, 0 page errors. Only scenario-expected non-2xx responses (500s and one 404); no failed non-API requests. | L71 |
 
 **Environment:** URL `http://localhost:5173/`. The server is a pre-existing user Vite dev server (PID 82635); it was neither started nor stopped by the role. Viewports were 1440×900 and 390×844. Adapter sessions were closed after each run ("No active sessions").
 
-**Required matrix, as covered by runs 2–3:**
+**Required matrix, as covered by run 4** (also covered by runs 2–3 on earlier code):
 - populated desktop and mobile, including the accessibility snapshot, Tab order, focus outline, no horizontal overflow, and 44px targets;
 - create: validation, pending prevention (3 rapid clicks → 1 POST), success and hidden-by-filter discoverability;
 - create failure with preserved input;
 - empty and no-matches as distinct states;
-- list, details and coaches errors, and an unknown session (404).
+- list, details and coaches errors, and an unknown session (404);
+- in run 4 only: backdrop click closes details and a click inside does not; Esc closes details; reduced motion disables the dialog animation.
 
-**Ad-hoc browser checks outside the `browser-verify` role** (headless Chromium via the project adapter):
+**Earlier ad-hoc browser checks outside the `browser-verify` role** (headless Chromium via the project adapter; since superseded by run 4):
 - backdrop click closes the dialog, clicks inside do not, and a drag from inside to the backdrop does not; Esc closes both dialogs (L57);
 - search label alignment and select chevron at both viewports (L61).
 
 ## 5. Limitations and unverified items
 
-- **Stale screenshots:** `evidence/*.png` predate `ff53791`. They show the old toolbar (no visible search label, native select arrow). `browser-verify` has not been re-run since `6d85645` and `ff53791`.
-- **Esc report:** the developer reported that Esc did not close the modal. This could not be reproduced in headless Chromium (L57). The browser and version have not been confirmed.
-- **Not verified:** Chrome's repeated-Esc behaviour with the native `confirm()`, screen-reader announcements, Firefox and Safari, real touch devices, long-content stress, and mobile screenshots of error and create states (browser-verification.md "Not verified").
-- **Console gap:** the run-2 console was cleared mid-run. The first filter and create pass is covered only by a later normal-flow re-check (browser-verification.md).
+- **Esc report:** the developer reported that Esc did not close the modal. This could not be reproduced in headless Chromium (L57, L71). The developer's browser and version have not been confirmed.
+- **Not verified:** Esc on a dirty create form (native `confirm()`), screen-reader announcements, Firefox and Safari, real touch devices, long-content stress (browser-verification.md, final run "Not verified").
 - **Missing automated tests:** `details-error`, `coaches-error`, details deep link, duplicate submit (review rounds 1–4 "Remaining gaps").
 - **Accepted limitation:** server field errors are cleared when any field is edited after the first submit (review round 1 and 2 dispositions).
 
@@ -104,10 +105,10 @@ Full record: `browser-verification.md`. Screenshots: `evidence/`.
 | --- | --- |
 | requirements, architecture, api-integration, ui-design, implementation-plan | present, committed in `9cf16da` before `coder` |
 | workflow-log.md | present. Planning checkpoint is recorded. **Developer-recorded fields are blank:** assessment starting commit, start/finish, breaks, active/calendar time, runtime/accelerator version, setup method, Doctor result. "Skipped or invoked contextual roles" is empty. |
-| review.md | **missing** (verdicts only in prompt log L33–L51) |
-| verification.md | **missing** (results only in prompt log L43, L55, L59, L63) |
-| browser-verification.md | present (current verdict PASS, predates `6d85645` / `ff53791`) |
-| evidence/populated-desktop.png, populated-mobile.png | present (pre-`ff53791` toolbar) |
+| review.md | present (transcribed from prompt log L33–L63) |
+| verification.md | present (transcribed from prompt log L43, L55, L59, L63) |
+| browser-verification.md | present (current verdict PASS from run 4 on current code) |
+| evidence/populated-desktop.png, populated-mobile.png | present (re-captured in run 4 on current code), plus 12 further flow screenshots |
 | final-report.md | this file |
 
 Time values are not included here. They must be developer-recorded in `workflow-log.md` and are not inferred.

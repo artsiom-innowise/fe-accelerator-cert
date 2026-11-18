@@ -1,8 +1,59 @@
 # TASK-001 Browser Verification
 
-Current verdict: **PASS**. This comes from the re-verification run (session `task001-reverify`, see "Re-verification of F1–F4" below), after the F1–F4 fixes.
+Current verdict: **PASS**. This comes from the final full run on the current code (session `task001-final`, see "Final verification on current code" below).
 
-The first run (session `task001-verify`) returned **FAIL** because of F1 and F2. Its record is kept below, and its screenshots of the populated, no-matches, list-error, details-error, coaches-error and create-error states were replaced by the re-verification captures. It superseded an earlier BLOCKED record (Node 23.11.1); that run was re-done after the runtime switched to Node 24.22.3.
+Earlier runs, kept below as history:
+- **Re-verification of F1–F4** (session `task001-reverify`): **PASS**.
+- **First run** (session `task001-verify`): **FAIL**, because of F1 and F2.
+- **An earlier record**: **BLOCKED** (Node 23.11.1).
+
+**All screenshots in `evidence/` were re-captured in the final run.** Their descriptions in the older sections refer to earlier captures, which were overwritten.
+
+## Final verification on current code
+
+| Item | Value |
+| --- | --- |
+| Date | 2026-11-18 |
+| Code state | HEAD `26ceb86` (production code identical to `ff53791`: `git diff ff53791 HEAD -- src index.html package.json vite.config.ts` is empty). This includes the backdrop-click close (`6d85645`) and the visible search label with padded select chevron (`ff53791`). |
+| Readiness gate | `node toolchain/bin/doctor.mjs --json` → **DEGRADED**. node 24.22.3 PASS, manifest PASS, `capability:browser` agent-browser@0.32.3 PASS, `hooks:claude` ACTIVE, `hooks:codex` PENDING_ACTIVATION (not the assessed runtime), lint PASS. |
+| Adapter / session | `node toolchain/bin/agent-browser.mjs`, session `task001-final` |
+| URL | `http://localhost:5173/` |
+| Server ownership | Pre-existing user Vite dev server, PID 82635 (`node …/node_modules/.bin/vite`, cwd = repo root). Not started or stopped by this role. |
+| Viewports | 1440×900 and 390×844 |
+
+| State / flow | Verdict | Interactions and observations |
+| --- | --- | --- |
+| Populated 1440×900 | PASS | Snapshot: h1 "Training sessions", button "Create session", searchbox "Search sessions" (visible label), combobox "Status", region "Sessions" with 5 column headers and 5 row links. Count "5 sessions". `scrollWidth` 1440 = `innerWidth`. Badges `inline-flex`, 57–103px. `evidence/populated-desktop.png` |
+| Populated 390×844 | PASS | `scrollWidth` 390 = `innerWidth`; 0 elements cross the viewport edges; 0 links/buttons/inputs/selects under 44px. Tab order: Skip link → Create session → search → status → first session link, each with a 2px solid outline. `evidence/populated-mobile.png` |
+| Details: keyboard | PASS | 390×844: Enter on the focused "U14 Shooting Lab" → `:modal` dialog, `?session=ses_101`, focus on `#session-details-title`. Esc → URL cleared, focus back on the link. `evidence/details-mobile.png` |
+| Details: backdrop click (`6d85645`) | PASS | 1440×900: click inside the panel (1200,400) → stays open. Click on the backdrop (200,400) → closes, URL cleared, focus on the originating link. |
+| List context | PASS | `?query=maya&status=scheduled` → 2 rows. Open details → `…&session=ses_101`. Browser Back → same URL, 2 rows, focus on the link. Filtering is server-side (`GET /api/sessions?query=maya&status=scheduled` 200). |
+| No matches | PASS | `?query=zzz` → "No sessions match your filters / Search “zzz” / Clear filters" (`evidence/no-matches-desktop.png`). Clicking the block's Clear filters → `flashedEmpty=false` (MutationObserver sampled every 60 ms for 1.2 s); focus on `#session-search`; 5 rows. |
+| Empty (`scenario=empty`) | PASS | "No sessions yet / Create the first session to start scheduling. / Create session". `evidence/empty-desktop.png` |
+| Create: validation | PASS | Empty submit → 7 controls `aria-invalid` (title, date, time, capacity, coach, location name, address), 6 inline errors, focus on `#create-title`, `aria-describedby="create-title-error"`, no POST. Past start → "⚠ Choose a start time in the future." `evidence/create-validation-desktop.png` |
+| Create: pending prevention | PASS | Submit clicked 3× (two within 30 ms) → button "Creating…" and disabled; exactly **1** `POST /api/sessions` 201 for this create. |
+| Create: success and discoverability | PASS | Banner "✓ “Evening Shooting Clinic” created for Tue 1 Dec, 17:00." with Open session; focus on the banner; list "6 sessions", new title last (`evidence/create-success-desktop.png`). Open session → `?session=ses_new_1`. With `status=cancelled`: banner adds "It’s hidden by your current filters." + Reset filters (`evidence/create-hidden-by-filter-desktop.png`). Reset → URL cleared, focus on search, 7 rows ending "Hidden By Filter Camp" (second POST 201). |
+| Create failure (`scenario=create-error`) | PASS | POST 500. Alert "⚠ The session could not be created. Your entries are kept, so you can try again." receives focus. All 8 values preserved (title, date, time, coach, location name, address, capacity, trainer notes). Submit re-enabled. `evidence/create-error-desktop.png`, and at 390×844 (`scrollWidth` 390) `evidence/create-error-mobile.png` |
+| List error (`scenario=list-error`) | PASS | Alert "⚠ Sessions cannot be loaded right now." + Retry; the toolbar stays usable. Retry sends a new request (500 again; the scenario is fixed). `evidence/list-error-mobile.png`, `evidence/list-error-desktop.png` |
+| Details error (`scenario=details-error&session=ses_101`) | PASS | Dialog "U14 Shooting Lab" with in-dialog alert "⚠ Session details cannot be loaded right now." + Retry. The list (5 rows) is unaffected. Back to sessions → focus on the "U14 Shooting Lab" link. `ses_102` then loads normally. `evidence/details-error-desktop.png` |
+| Unknown session (`?session=ses_unknown`) | PASS | 404 → dialog heading "Session not found". |
+| Coaches error (`scenario=coaches-error&create=1`) | PASS | Alert "⚠ Coach choices cannot be loaded right now. You can't create a session until they load." + "Retry loading coaches". Coach select disabled, submit disabled, visible reason "Coach choices are required before you can create a session." Retry sends a new request (500 again). `evidence/coaches-error-desktop.png` |
+| Reduced motion | PASS | Emulated `prefers-reduced-motion: reduce` → open dialog `animation-name: none`. |
+
+**Console:** levels were log 174, debug 12, info 6, and startGroupCollapsed/endGroup 54 (MSW request logging). **0 error and 0 warning entries.** The console was cleared once, after the page load and before any interaction, and not again; it covers the whole run.
+
+**Page errors:** none.
+
+**Network:**
+- Non-2xx `/api` responses were only the scenario-expected ones: `POST /api/sessions` 500 (create-error), `GET /api/sessions` 500 ×2 (list-error and retry), `GET /api/sessions/ses_101` 500 (details-error), `GET /api/sessions/ses_unknown` 404, `GET /api/coaches` 500 ×2 (coaches-error and retry).
+- No failed non-API requests.
+- No unexpected navigation.
+
+**Not verified in this run:**
+- Esc on a dirty create form (it involves the native `confirm()`, not driven by the adapter). The developer-reported Esc failure was not reproduced: Esc closed details here.
+- Screen-reader announcements; Firefox and Safari; real touch devices; long-content stress.
+
+**Closure:** `close` → `session list` "No active sessions". PID 82635 is still running and was not stopped.
 
 ## Setup
 
