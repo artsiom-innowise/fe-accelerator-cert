@@ -24,6 +24,16 @@
             "statusMessage": "Recording pre-change state"
           }
         ]
+      },
+      {
+        "matcher": "Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/scripts/log-workflow.mjs\"",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -47,6 +57,37 @@
             "command": "node \"${CLAUDE_PROJECT_DIR}/toolchain/hooks/runtime-hook.mjs\" claude Stop --registration frontend-accelerator.changed-file-lint-gate.v1",
             "timeout": 300,
             "statusMessage": "Linting files changed in this session"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/scripts/log-workflow.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/scripts/log-workflow.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/scripts/log-workflow.mjs\"",
+            "timeout": 10
           }
         ]
       }
