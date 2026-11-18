@@ -186,6 +186,16 @@ textarea {
 }
 
 input[aria-invalid='true'],
+/* Custom chevron: the native arrow sits flush against the right border. */
+select {
+  appearance: none;
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235F6B6F' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px 8px;
+}
+
 select[aria-invalid='true'],
 textarea[aria-invalid='true'] {
   border-color: var(--danger);
@@ -193,7 +203,7 @@ textarea[aria-invalid='true'] {
 
 select:disabled,
 input:disabled {
-  background: var(--surface-muted);
+  background-color: var(--surface-muted);
   color: var(--text-muted);
 }
 
@@ -272,19 +282,23 @@ input:disabled {
   border-bottom: 1px solid var(--border);
 }
 
+.toolbar__search,
+.toolbar__status {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .toolbar__search {
   flex: 1 1 260px;
   max-width: 420px;
 }
 
 .toolbar__status {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
   flex: 0 1 200px;
 }
 
-.toolbar__status label {
+.toolbar label {
   font-size: 13px;
   line-height: 18px;
   color: var(--text-muted);

@@ -15,7 +15,7 @@ export function SessionsToolbar({ params, countText }: SessionsToolbarProps) {
   return (
     <div role="search" aria-label="Filter sessions" className="toolbar">
       <div className="toolbar__search">
-        <label htmlFor="session-search" className="visually-hidden">
+        <label htmlFor="session-search">
           Search sessions
         </label>
         <input
