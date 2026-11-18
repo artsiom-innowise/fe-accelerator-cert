@@ -2,14 +2,20 @@
 
 <!-- Hand-written by the developer (EVIDENCE_PROTOCOL.md §3); agents transcribe these values, never infer them. -->
 - Task identifier: TASK-001
-- Assessment starting commit:
-- Start / finish (developer-recorded):
-- Substantial breaks:
-- Active time / calendar time:
-- Time values transcribed, not inferred: yes / no
-- Runtime and accelerator version:
-- Install and setup method:
-- Doctor result and runtime hook status:
+- Assessment starting commit: ab183c4 (ab183c428e1f6aa267bcdba9077799683ac028d4), 2026-11-18 12:16:11 +0100, "chore: scaffold vite app, install accelerator, add assessment package". This is the first commit in the repository history.
+- Start / finish (developer-recorded): start 2026-11-18 12:00 CET, finish 2026-11-18 16:00 CET
+- Substantial breaks: about 1 hour (developer-reported: "break took almost 1 hour")
+- Active time / calendar time: about 3h 00m active (4h calendar minus the ~1h break) / 4h 00m calendar (12:00 to 16:00 CET)
+- Time values transcribed, not inferred: yes. Start, finish and break duration are transcribed from the developer's messages. Calendar and active time are arithmetic from those values only.
+- Runtime and accelerator version: Claude Code (claude-opus-5-5), Node.js 24.22.3 (verification also ran earlier on Node 23.11.1 and was rejected by Doctor; see browser-verification.md). Accelerator: frontend-accelerator-toolset@0.1.0, local checkout /Users/user/Documents/frontend-accelerator-toolset at de86175 (de86175f875a5468f98d2d9c2bb40e91c7b69f4f). Runtime Toolchain Manifest 7e9501102f9b; agent-browser@0.32.3; ctx7@0.5.5.
+- Install and setup method: local-path installer per the toolset README:
+  1. `npx --package "/Users/user/Documents/frontend-accelerator-toolset" frontend-accelerator install`. Its receipt `.frontend-accelerator/installation.json` and the merged `.claude/settings.json` were committed in ab183c4.
+  2. `npx --package "…" frontend-accelerator setup`, which provisioned the runtime toolchain into the user cache `/Users/user/Library/Caches/frontend-accelerator`.
+  3. Hooks reviewed and trusted through `/hooks` in Claude Code; a `SessionStart` activation proof was written at 2026-11-18T13:35:00Z.
+- Doctor result and runtime hook status: `npx --package "/Users/user/Documents/frontend-accelerator-toolset" frontend-accelerator doctor`, run 2026-11-18 on Node.js 24.22.3, gave top-level **DEGRADED** (exit 0):
+  - [PASS] Git root; [PASS] Node.js 24.22.3; [PASS] Runtime Toolchain Manifest 7e9501102f9b; [PASS] browser agent-browser@0.32.3; [PASS] docs ctx7@0.5.5; [PASS] lint capability.
+  - **claude hooks: ACTIVE** (the assessed runtime).
+  - [DEGRADED] codex hooks: PENDING_ACTIVATION (Codex is not used in this assessment).
 - Planning checkpoint commit (before coder): 9cf16da (9cf16da3b15ddebb3438f5367451aa6b583dbbd3) "feat: TASK-001 plan ready for coding"
 
 ## Roles
@@ -43,4 +49,13 @@ Full prompts, role tasks and responses: `workflow-evidence/prompt-log.jsonl` (lo
 
 ## Skipped or invoked contextual roles
 
-- 
+- `brainstorm`: skipped. The assessment spec fixes the product behavior, so requirements-analyst found no product ambiguity that needed exploration.
+- `architect`, `api-integration`, `ui-designer`: invoked once each, because requirements.md named an open decision for each (Q1–Q5). `architect` was invoked twice: the first attempt was interrupted when the developer rejected an interactive question. It STOPped for the developer's dependency choice (D6 = option A).
+- `test-generator`: skipped. The six essential tests cover the required matrix. Additional coverage gaps are recorded in review.md and final-report.md.
+- `debugger`: skipped. Every defect found by review and browser verification had a known cause and was fixed through `coder`.
+- `docs-generator`: invoked for final-report.md and its update after the final browser run. review.md and verification.md were transcribed from the prompt log at the developer's direct request (not a role invocation).
+- `finishing-branch`, `release`, `git-worktrees`, `reflect`, `skill-creator`: skipped. No merge, release, worktree, rule or skill change was requested.
+- Deviations, recorded honestly:
+  - Before each code commit (`777a5b1`, `6d85645`, `ff53791`), the assistant invoked `verify` itself under the session rule "run verify before commit", not as a developer-selected role.
+  - The backdrop-click fix (`6d85645`) and the toolbar fix (`ff53791`) were made directly at the developer's request, without a `coder` role invocation and without a `code-reviewer` pass. They were later covered by the final `browser-verify` run.
+  - All roles ran as skills inside the main Claude Code session, not as separate subagents. 

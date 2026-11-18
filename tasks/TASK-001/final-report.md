@@ -104,11 +104,11 @@ Full record: `browser-verification.md`. Screenshots: `evidence/`.
 | Artifact | Status |
 | --- | --- |
 | requirements, architecture, api-integration, ui-design, implementation-plan | present, committed in `9cf16da` before `coder` |
-| workflow-log.md | present. Planning checkpoint is recorded. **Developer-recorded fields are blank:** assessment starting commit, start/finish, breaks, active/calendar time, runtime/accelerator version, setup method, Doctor result. "Skipped or invoked contextual roles" is empty. |
+| workflow-log.md | present. Planning checkpoint, starting commit (`ab183c4`), start/finish (12:00–16:00 CET, developer-recorded), breaks (~1h), active time (~3h), calendar time (4h), runtime/accelerator version, install/setup method, Doctor (DEGRADED; claude hooks ACTIVE) and skipped/invoked roles are recorded. |
 | review.md | present (transcribed from prompt log L33–L63) |
 | verification.md | present (transcribed from prompt log L43, L55, L59, L63) |
 | browser-verification.md | present (current verdict PASS from run 4 on current code) |
 | evidence/populated-desktop.png, populated-mobile.png | present (re-captured in run 4 on current code), plus 12 further flow screenshots |
 | final-report.md | this file |
 
-Time values are not included here. They must be developer-recorded in `workflow-log.md` and are not inferred.
+Time values are recorded only in `workflow-log.md`, as transcribed from the developer.
