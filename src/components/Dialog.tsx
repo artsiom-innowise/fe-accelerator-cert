@@ -16,6 +16,7 @@ interface DialogProps {
 export function Dialog({ titleId, onClose, onDismiss = onClose, returnFocus, size = 'narrow', children }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const unmountingRef = useRef(false)
+  const pressedBackdropRef = useRef(false)
   const getReturnTarget = useEffectEvent(() => returnFocus?.() ?? null)
 
   useEffect(() => {
@@ -45,6 +46,15 @@ export function Dialog({ titleId, onClose, onDismiss = onClose, returnFocus, siz
       onCancel={(event) => {
         event.preventDefault()
         onClose()
+      }}
+      // Content fills the dialog box, so a target of the dialog itself means the backdrop.
+      // Require press and release there so a text selection dragged outside does not close it.
+      onMouseDown={(event) => {
+        pressedBackdropRef.current = event.target === event.currentTarget
+      }}
+      onClick={(event) => {
+        if (pressedBackdropRef.current && event.target === event.currentTarget) onClose()
+        pressedBackdropRef.current = false
       }}
       onClose={() => {
         // A native close the app did not request: sync app state so the dialog can reopen.

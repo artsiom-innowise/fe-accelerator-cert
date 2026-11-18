@@ -48,6 +48,14 @@ describe('Sessions workspace', () => {
     await user.selectOptions(screen.getByLabelText('Status'), 'Cancelled')
     await waitFor(() => expect(rowTitles()).toEqual(['Weekend Ball Handling']))
     expect(screen.getByText('1 session')).toBeInTheDocument()
+
+    // Clicking the backdrop closes details, keeps the filter and returns focus to the row link.
+    await user.click(screen.getByRole('link', { name: 'Weekend Ball Handling' }))
+    const details = await screen.findByRole('dialog', { name: 'Weekend Ball Handling' })
+    await user.click(details)
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(window.location.search).toBe('?status=cancelled')
+    expect(screen.getByRole('link', { name: 'Weekend Ball Handling' })).toHaveFocus()
   })
 
   it('distinguishes no matches from no sessions, with recovery actions', async () => {
