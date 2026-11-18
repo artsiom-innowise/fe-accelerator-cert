@@ -1,75 +1,40 @@
-# React + TypeScript + Vite
+# Training Sessions Workspace
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend-only workspace for a basketball training business: scan, filter and inspect scheduled sessions, and create new ones. The API (`/api/*`, see `frontend-accelerator-assessment/API_CONTRACT.md`) is served by Mock Service Worker in the browser; there is no backend.
 
-Currently, two official plugins are available:
+## Commands
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm install        # once
+npm run dev        # start the app (URL printed by Vite)
+npm test           # behavior tests (Vitest + Testing Library + MSW node)
+npm run build      # typecheck and production build
+npm run lint
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+The app works offline once dependencies are installed.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Mock scenarios
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Append `?scenario=<name>` to the app URL to select a deterministic mock scenario at startup:
 
-```
+| Scenario | Effect |
+| --- | --- |
+| `normal` (default) | fixture sessions, details and coaches |
+| `empty` | no sessions exist |
+| `list-error` | `GET /api/sessions` returns 500 |
+| `details-error` | `GET /api/sessions/ses_101` returns 500 |
+| `coaches-error` | `GET /api/coaches` returns 500 |
+| `create-error` | `POST /api/sessions` returns 500 |
+
+Fixture timestamps are rebased to the current time at mock startup. Created sessions live in memory until reload.
+
+## Structure
+
+- `src/api/`: typed client, contract types, date parsing and formatting
+- `src/features/sessions/`: workspace, details and create dialogs, data hooks, validation
+- `src/components/`: shared dialog, field, alert and status badge
+- `src/lib/useUrlState.ts`: URL search params (`query`, `status`, `session`, `create`) as the single owner of view state
+- `src/mocks/`: MSW handlers, in-memory db, scenario selection (the only code that reads fixtures)
+
+Task decisions and evidence: `tasks/TASK-001/`.
