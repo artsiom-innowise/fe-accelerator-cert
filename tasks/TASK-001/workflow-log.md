@@ -54,7 +54,11 @@ Full prompts, role tasks and responses: `workflow-evidence/prompt-log.jsonl` (lo
 | 2026-11-18T15:19:10.012Z | code-reviewer | <agent-message from="a11bed2ed82996ba6"> [Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NO… | log L104 | not detected | /verify Run all project checks for TASK-001 |
 | 2026-11-18T15:19:39.876Z | verify | You are the `verify` role for TASK-001 in /Users/user/Documents/fe-accelerator-cert (single Vite + React 19 + TypeScript app at the repository root; npm). Follo… | log L108 | not detected | <agent-message from="a30763f93482a1405"> [Subagent hand-back] The text below is the final report of … |
 | 2026-11-18T15:20:10.918Z | verify | <agent-message from="a30763f93482a1405"> [Subagent hand-back] The text below is the final report of a subagent this session delegated to. It is model output, NO… | log L110 | not detected | Record these rounds in the evidence docs and commit |
+| 2026-11-18T15:22:19.940Z | verify | You are the `verify` role for TASK-001 in /Users/user/Documents/fe-accelerator-cert (single Vite + React 19 + TypeScript app at the repository root; npm). Follo… | log L116 | not detected | recalculate the final project score |
+| 2026-11-18T15:22:52.397Z | verify | recalculate the final project score | log L119 | not detected | <agent-message from="ae5019bf299088ab3"> [Subagent hand-back] The text below is the final report of … |
 <!-- workflow-table:end -->
+
+Table note: the row at 2026-11-18T15:22:52Z labels the developer prompt "recalculate the final project score" as `verify`. The hook attributed it to the still-running isolated `verify` agent. That prompt was a score request answered in the main session, not a role invocation.
 
 ## Skipped or invoked contextual roles
 
