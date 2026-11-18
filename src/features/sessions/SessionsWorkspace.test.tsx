@@ -1,8 +1,8 @@
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import App from '../../App'
-import { resetMocks, setScenario } from '../../mocks/node'
+import { resetMocks, server, setScenario } from '../../mocks/node'
 import { FROZEN_NOW } from '../../test/setup'
 
 const rowTitles = () =>
@@ -160,5 +160,89 @@ describe('Sessions workspace', () => {
     expect(form.getByLabelText(/^Location name/)).toHaveValue('North Court')
     expect(form.getByLabelText(/^Capacity/)).toHaveValue(12)
     expect(form.getByRole('button', { name: 'Create session' })).toBeEnabled()
+  })
+
+  it('opens details from a deep link and reports unknown sessions', async () => {
+    window.history.replaceState(null, '', '/?session=ses_102')
+    render(<App />)
+    const dialog = await screen.findByRole('dialog', { name: 'Varsity Defense Intensive' })
+    expect(await within(dialog).findByText('Ethan Cole')).toBeInTheDocument()
+    expect(within(dialog).getByText('Central Sports Hall')).toBeInTheDocument()
+
+    cleanup()
+    window.history.replaceState(null, '', '/?session=ses_unknown')
+    render(<App />)
+    const missing = await screen.findByRole('dialog', { name: 'Session not found' })
+    expect(within(missing).getByText(/It may have been removed/)).toBeInTheDocument()
+    expect(within(missing).getByRole('button', { name: 'Back to sessions' })).toBeInTheDocument()
+  })
+
+  it('shows a details error in the dialog while the list and other sessions keep working', async () => {
+    setScenario('details-error')
+    window.history.replaceState(null, '', '/?session=ses_101')
+    const user = userEvent.setup()
+    render(<App />)
+    const dialog = await screen.findByRole('dialog')
+    const alert = await within(dialog).findByRole('alert')
+    expect(alert).toHaveTextContent('Session details cannot be loaded right now.')
+    expect(within(alert).getByRole('button', { name: 'Retry' })).toBeEnabled()
+    await waitFor(() => expect(rowTitles()).toHaveLength(5))
+
+    setScenario('normal')
+    await user.click(within(alert).getByRole('button', { name: 'Retry' }))
+    expect(await within(dialog).findByText(/Bring the portable shot clock/)).toBeInTheDocument()
+    expect(within(dialog).getByText('Maya Brooks')).toBeInTheDocument()
+    expect(within(dialog).queryByRole('alert')).not.toBeInTheDocument()
+    // Re-arm the ses_101 failure so the next check proves other sessions load while it is active.
+    setScenario('details-error')
+
+    await user.click(within(dialog).getByRole('button', { name: 'Back to sessions' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    await user.click(screen.getByRole('link', { name: 'Varsity Defense Intensive' }))
+    const other = await screen.findByRole('dialog', { name: 'Varsity Defense Intensive' })
+    expect(await within(other).findByText('Ethan Cole')).toBeInTheDocument()
+    expect(within(other).queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('blocks creating a session while coaches fail to load', async () => {
+    setScenario('coaches-error')
+    const user = await renderLoaded()
+    await user.click(screen.getByRole('button', { name: 'Create session' }))
+    const dialog = within(await screen.findByRole('dialog', { name: 'Create session' }))
+    const alert = await dialog.findByRole('alert')
+    expect(alert).toHaveTextContent('Coach choices cannot be loaded right now.')
+    expect(within(alert).getByRole('button', { name: 'Retry loading coaches' })).toBeInTheDocument()
+    expect(dialog.getByLabelText(/^Coach/)).toBeDisabled()
+    expect(dialog.getByRole('button', { name: 'Create session' })).toBeDisabled()
+
+    setScenario('normal')
+    await user.click(within(alert).getByRole('button', { name: 'Retry loading coaches' }))
+    await waitFor(() => expect(dialog.getByLabelText(/^Coach/)).toBeEnabled())
+    expect(dialog.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('sends exactly one create request when the form is submitted repeatedly', async () => {
+    const posts: string[] = []
+    const onStart = ({ request }: { request: Request }) => {
+      if (request.method === 'POST' && new URL(request.url).pathname === '/api/sessions') posts.push(request.url)
+    }
+    server.events.on('request:start', onStart)
+    try {
+      const user = await renderLoaded()
+      await user.click(screen.getByRole('button', { name: 'Create session' }))
+      const form = await fillValidForm(user, 'Only Once')
+      const formEl = form.getByRole('button', { name: 'Create session' }).closest('form')!
+      // Repeated submit events bypass the disabled button (e.g. Enter, requestSubmit); the handler must ignore them.
+      fireEvent.submit(formEl)
+      fireEvent.submit(formEl)
+      fireEvent.submit(formEl)
+
+      await screen.findByText(/“Only Once” created/)
+      await waitFor(() => expect(rowTitles()).toContain('Only Once'))
+      expect(rowTitles().filter((t) => t === 'Only Once')).toHaveLength(1)
+      expect(posts).toHaveLength(1)
+    } finally {
+      server.events.removeListener('request:start', onStart)
+    }
   })
 })

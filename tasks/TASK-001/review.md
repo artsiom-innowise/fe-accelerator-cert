@@ -63,7 +63,28 @@ Both changes below were made directly in the main session at the developer's req
 | `6d85645` | Close dialogs on backdrop click (developer-reported issue, L56–L57). | Regression assertion added to test 1; it failed with the fix disabled and passed with it. Ad-hoc browser check in headless Chromium via the project adapter (L57). Pre-commit `verify` PASS (L59). |
 | `ff53791` | Visible search label and padded select chevron (developer-reported, L60–L61). | Ad-hoc browser check at both viewports (L61). Pre-commit `verify` PASS (L63). |
 
-The developer's report that Esc did not close the modal could not be reproduced (L57). It remains **unresolved** pending the developer's browser and steps.
+The developer's report that Esc did not close the modal could not be reproduced (L57). The final `browser-verify` run (L71) observed Esc closing details. The developer later confirmed "Esc is working fine". **Resolved: no defect** (no code change).
+
+## Round 5: isolated review of the new test-generator tests
+
+- Source: isolated `code-reviewer` subagent (workflow-log table L90/L92), reviewing `git diff HEAD -- src/features/sessions/SessionsWorkspace.test.tsx` at HEAD `8d46123`. It did not write the code under review.
+- **Verdict: NEEDS-CHANGES**
+
+| # | Severity | Finding | Disposition |
+| --- | --- | --- | --- |
+| 8 | Should-fix | `SessionsWorkspace.test.tsx:188,206`: the `details-error` and `coaches-error` tests only asserted the Retry buttons exist. Dropping `onRetry` or breaking `retry` would still pass. | **Resolved** by isolated `test-generator` (L96/L98): `setScenario('normal')` → click Retry → assert the ses_101 details (trainer note, coach) load in the dialog / the Coach select becomes enabled, and the alert is gone. With `onRetry` made a no-op, each test failed; both production files were restored (empty diff). |
+| 9 | Minor | `:222`: the comment claimed the repeated submits land before React re-renders (inaccurate under `act()`). | **Resolved**: reworded (line 235); assertions unchanged. |
+| 10 | Note | The unknown-session check uses the normal handler's 404, not the `unknown-session` scenario. | No change needed. |
+
+## Round 6: isolated re-review of the test fixes
+
+- Source: isolated `code-reviewer` subagent (L102/L104)
+- **Verdict: PASS.** Findings 8 and 9 are resolved; no new issues.
+- Its own evidence: 10/10 on 6 runs. It mutated `onRetry={details.retry}` to a no-op → 1 failed / 9 passed, then restored the file with `git checkout` (0-line diff). It relied on the test-generator's mutation proof for the coaches retry.
+
+| # | Severity | Finding | Disposition |
+| --- | --- | --- | --- |
+| 11 | Nit (optional) | `:220-221`: after the coaches retry, the test could also assert that a coach option (e.g. Maya Brooks) appears. An empty list would already keep the select disabled and fail the test. | **Unresolved** (optional). |
 
 ## Summary
 
@@ -73,4 +94,6 @@ The developer's report that Esc did not close the modal could not be reproduced 
 | 2 (L37) | NEEDS-CHANGES | 1 → resolved by L39 |
 | 3 (L41) | PASS | 0 |
 | 4 (L51) | PASS | 1 optional copy nit, unresolved |
-| Post-review commits | not reviewed | Esc report unresolved |
+| Post-review commits | not reviewed | Esc report resolved by developer confirmation (no defect) |
+| 5 (isolated) | NEEDS-CHANGES | 2 → resolved by isolated test-generator |
+| 6 (isolated) | PASS | 1 optional nit, unresolved |

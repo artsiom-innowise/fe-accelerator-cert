@@ -29,6 +29,13 @@ Full record: `review.md`, transcribed from the prompt log.
 
 The two developer-reported fixes after the review rounds (`6d85645`, `ff53791`) were **not** given a `code-reviewer` pass.
 
+Isolated-agent review rounds (after the final report, developer-selected):
+
+| Round | Verdict | Findings and disposition | Source |
+| --- | --- | --- | --- |
+| 5: isolated review of the new tests | NEEDS-CHANGES | Should-fix: Retry never clicked in the details/coaches error tests. Minor: an inaccurate comment. Both **resolved** by an isolated `test-generator`, with mutation proof. | review.md round 5 |
+| 6: isolated re-review | **PASS** | One optional nit (assert a coach option after retry), unresolved. | review.md round 6 |
+
 ## 3. Automated verification evidence
 
 Full record: `verification.md`, transcribed from the prompt log.
@@ -43,6 +50,8 @@ Full record: `verification.md`, transcribed from the prompt log.
 | `npm run build` | 0 | built; JS chunk 682.92 kB (238.54 kB gzip), which triggers Vite's 500 kB warning (MSW and fixtures are always bundled, architecture D4) |
 
 Not applicable: formatting (no formatter or script), end-to-end tests (none configured).
+
+**Isolated `verify` run** (developer-selected, Node 24.22.3, after the test additions): `npx tsc -b` 0, lint 0 errors / same 1 warning, `npm test` **10/10**, build OK. Verdict **PASS** (verification.md "Isolated verify run").
 
 **Pre-commit re-runs** (Node 24.22.3; the same four commands each time, all exit 0, lint 0 errors / same 1 warning, tests 6/6, build OK):
 
@@ -79,9 +88,9 @@ Full record: `browser-verification.md`. Screenshots: `evidence/`.
 
 ## 5. Limitations and unverified items
 
-- **Esc report:** the developer reported that Esc did not close the modal. This could not be reproduced in headless Chromium (L57, L71). The developer's browser and version have not been confirmed.
+- **Esc report:** resolved, no defect. It could not be reproduced in headless Chromium (L57, L71), and the developer later confirmed "Esc is working fine".
 - **Not verified:** Esc on a dirty create form (native `confirm()`), screen-reader announcements, Firefox and Safari, real touch devices, long-content stress (browser-verification.md, final run "Not verified").
-- **Missing automated tests:** `details-error`, `coaches-error`, details deep link, duplicate submit (review rounds 1–4 "Remaining gaps").
+- **Automated test gaps closed:** `details-error` (with retry recovery), `coaches-error` (with retry recovery), details deep link + unknown session, and duplicate submit → 1 POST are now covered (10 tests). Still untested: focus after a retry, creating a session after coaches recover, and a repeated retry failure.
 - **Accepted limitation:** server field errors are cleared when any field is edited after the first submit (review round 1 and 2 dispositions).
 
 ## 6. Assumptions and trade-offs (from task decisions)
