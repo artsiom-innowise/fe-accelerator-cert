@@ -47,3 +47,5 @@ if (input.hook_event_name === "UserPromptSubmit") {
 
 mkdirSync(join(root, "workflow-evidence"), { recursive: true });
 appendFileSync(join(root, "workflow-evidence", "prompt-log.jsonl"), JSON.stringify(entry) + "\n");
+// keep tasks/<TASK>/workflow-log.md in sync; a render failure must never break logging
+try { await import("./workflow-log.mjs"); } catch {}
