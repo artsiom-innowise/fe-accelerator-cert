@@ -36,6 +36,7 @@ Full prompts, role tasks and responses: `workflow-evidence/prompt-log.jsonl` (lo
 | 2026-11-18T14:00:51.210Z | coder | /coder Fix browser-verification defects F1–F4 for TASK-001 | log L49 | not detected | /code-reviewer Re-review the F1–F4 fixes |
 | 2026-11-18T14:02:09.279Z | code-reviewer | /code-reviewer Re-review the F1–F4 fixes | log L51 | not detected | /browser-verify Re-verify F1–F4 fixes and update browser-verification.md |
 | 2026-11-18T14:03:58.797Z | browser-verify | /browser-verify Re-verify F1–F4 fixes and update browser-verification.md | `tasks/TASK-001/browser-verification.md`; log L53 | not detected | Prepare a commit message and commit changes |
+| 2026-11-18T14:26:40.212Z | docs-generator | /docs-generator Assemble only the actual review, browser, and verification evidence into tasks/TASK-001/final-report.md. | `tasks/TASK-001/final-report.md`; log L65 | not detected | pending |
 <!-- workflow-table:end -->
 
 ## Skipped or invoked contextual roles
